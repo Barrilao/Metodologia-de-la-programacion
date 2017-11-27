@@ -1,0 +1,53 @@
+PROJECTNAME = reversi
+
+SRC = src
+INC = include
+OBJ = obj
+DOC = doc
+BIN = bin
+DEBUG = debug
+AR = ar
+CXX = g++
+CXXFLAGS = -Wall -Wextra -pedantic -std=c++03 -g -I./$(INC)
+
+SOURCES := matriz.cpp tablero.cpp jugador.cpp
+INCLUDES := $(addprefix $(INC)/, $(SOURCES:.cpp=.h))
+OBJECTS := $(addprefix $(OBJ)/, $(SOURCES:.cpp=.o))
+SOURCES := $(addprefix $(SRC)/, $(SOURCES))
+
+.PHONY: docs tar clean mrproper
+
+# ************ Generación de ejecutables *************
+# -- Programa principal --
+$(BIN)/reversi: $(OBJ)/reversi.o $(OBJECTS)
+	$(CXX) -o $@ $^
+
+# ************ Compilación de módulos ************
+# -- Programa principal --
+$(OBJ)/reversi.o: $(SRC)/reversi.cpp $(INCLUDES)
+	$(CXX) $(CXXFLAGS) -o $@ -c $<
+
+$(OBJ)/%.o: $(SRC)/%.cpp $(INC)/%.h
+	$(CXX) $(CXXFLAGS) -o $@ -c $<
+
+# -- Dependencias adicionales --
+$(OBJ)/tablero.o: $(INC)/matriz.h
+$(OBJ)/jugador.o: $(INC)/tablero.h
+
+# ************ Generación de documentación ******************
+docs:
+	@doxygen $(DOC)/doxys/Doxyfile
+	@echo "-- Documentación disponible en $(DOC)/html --"
+
+# ************ Distribuir ******************
+tar: mrproper
+	@tar zcvf $(PROJECTNAME).tgz *
+
+# ************ Limpieza ************
+clean :
+	-@rm -f $(OBJ)/* $(SRC)/*~ $(INC)/*~ *~
+	@echo "Limpiando..."
+
+mrproper : clean
+	-@rm -f $(BIN)/* doc/html/* $(LIB)/*.a
+	@echo "Limpieza completada"
